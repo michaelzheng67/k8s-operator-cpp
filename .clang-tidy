@@ -30,7 +30,7 @@ CheckOptions:
     value: lower_case
   - key: readability-identifier-naming.PrivateMemberSuffix
     value: _
-  - key: readability-identifier-naming.ConstexprVariableCase
+  - key: readability-identifier-naming.GlobalConstantCase
     value: CamelCase
-  - key: readability-identifier-naming.ConstexprVariablePrefix
+  - key: readability-identifier-naming.GlobalConstantPrefix
     value: k
