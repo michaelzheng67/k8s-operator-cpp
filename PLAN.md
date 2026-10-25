@@ -31,7 +31,7 @@ kubectl cluster-info --context kind-bt
 **Goal:** an empty project that builds, tests, and lints in CI.
 
 - [ ] `CMakeLists.txt` with targets `k8sop` (library), `operator` (executable), `tests`, `bench`
-- [ ] `vcpkg.json` manifest: `boost-beast`, `boost-asio`, `openssl`, `nlohmann-json`, `spdlog`, `gtest`, `benchmark`, `yaml-cpp` (for kubeconfig)
+- [ ] `vcpkg.json` manifest with `spdlog`, `gtest`, `benchmark`. Add the other deps in the milestone that first needs them.
 - [ ] `CMakePresets.json`: `debug`, `release`, `asan` (ASan + UBSan), `tsan`
 - [ ] `.clang-format`, `.clang-tidy`, `.gitignore`
 - [ ] A trivial `main.cpp` and one passing GoogleTest
@@ -274,7 +274,7 @@ kubectl cluster-info --context kind-bt
 
 ## Conventions
 
-- C++20, no raw `new`/`delete`, RAII for every resource.
+- C++23, no raw `new`/`delete`, RAII for every resource.
 - No exceptions cross module boundaries. Fallible APIs return `std::expected`.
 - One reconciler call means one consistent read of the cache plus the minimum set of writes. Never sleep or block inside reconcile; return `requeue_after` instead.
 - Every Pod the operator creates carries the `managed-by` label and an owner reference.

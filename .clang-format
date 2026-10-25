@@ -1,0 +1,10 @@
+BasedOnStyle: Google
+ColumnLimit: 100
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<[a-z_]+>$'          # C++ standard library
+    Priority: 1
+  - Regex: '^<.*>'                # third-party
+    Priority: 2
+  - Regex: '^"k8sop/'             # our headers
+    Priority: 3

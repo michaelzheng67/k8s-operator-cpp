@@ -1,0 +1,5 @@
+# Google Benchmark conventions: BM_Name functions and `for (auto _ : state)` loops.
+InheritParentConfig: true
+Checks: >
+  -readability-identifier-naming,
+  -clang-analyzer-deadcode.DeadStores

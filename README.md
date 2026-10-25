@@ -1,6 +1,6 @@
 # k8s-operator-cpp
 
-A Kubernetes operator for running quant strategy backtests, written from scratch in modern C++ (C++20). It talks to the Kubernetes REST API directly and doesn't use a client library.
+A Kubernetes operator for running quant strategy backtests, written from scratch in modern C++ (C++23). It talks to the Kubernetes REST API directly and doesn't use a client library.
 
 ## What it does
 
@@ -257,7 +257,7 @@ The operator reads that termination message from the Pod's status to rank trials
 
 | Concern | Choice |
 |---|---|
-| Language | C++20 |
+| Language | C++23 |
 | Build | CMake + Ninja, vcpkg |
 | HTTP / TLS / async | Boost.Beast, Boost.Asio, OpenSSL |
 | JSON | nlohmann/json (simdjson on the watch hot path) |
