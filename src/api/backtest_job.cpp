@@ -1,5 +1,12 @@
 #include "k8sop/api/backtest_job.hpp"
 
+#include <array>
+#include <cassert>
+#include <charconv>
+#include <system_error>
+#include <type_traits>
+#include <variant>
+
 #include "k8sop/api/detail/enum_table.hpp"
 #include "k8sop/api/detail/json_helpers.hpp"
 
@@ -27,9 +34,21 @@ constexpr EnumTable<JobPhase, 4> kJobPhases{{
 
 }  // namespace
 
-// TODO(you): use std::visit. Numbers must print in their shortest exact form: 0.1 -> "0.1" (not
-// "0.100000", which is what std::to_string gives). Look up std::to_chars.
-std::string to_string(const ParamValue& /*value*/) { return {}; }
+std::string to_string(const ParamValue& value) {
+  return std::visit(
+      [](const auto& v) -> std::string {
+        using T = std::decay_t<decltype(v)>;
+        if constexpr (std::is_same_v<T, std::string>) {
+          return v;
+        } else {
+          std::array<char, 32> buf{};
+          auto [ptr, ec] = std::to_chars(buf.data(), buf.data() + buf.size(), v);
+          assert(ec == std::errc{} && "32 bytes fits any int64_t or shortest-form double");
+          return std::string{buf.data(), ptr};
+        }
+      },
+      value);
+}
 
 std::string_view to_string(Goal goal) noexcept { return detail::enum_to_string(kGoals, goal); }
 
@@ -180,14 +199,21 @@ void from_json(const json& j, BacktestJob& job) {
 
 namespace nlohmann {
 
-// TODO(you): write whichever alternative the variant holds (std::visit).
-void adl_serializer<k8sop::api::ParamValue>::to_json(json& /*j*/,
-                                                     const k8sop::api::ParamValue& /*value*/) {}
+void adl_serializer<k8sop::api::ParamValue>::to_json(json& j, const k8sop::api::ParamValue& value) {
+  std::visit([&j](const auto& v) { j = v; }, value);
+}
 
-// TODO(you): JSON integer -> std::int64_t, JSON float -> double, JSON string -> std::string.
-// Anything else (bool, null, array, object) must throw nlohmann::json::type_error; see
-// detail::throw_type_error.
-void adl_serializer<k8sop::api::ParamValue>::from_json(const json& /*j*/,
-                                                       k8sop::api::ParamValue& /*value*/) {}
+void adl_serializer<k8sop::api::ParamValue>::from_json(const json& j,
+                                                       k8sop::api::ParamValue& value) {
+  if (j.is_number_integer()) {
+    value = j.get<std::int64_t>();
+  } else if (j.is_number_float()) {
+    value = j.get<double>();
+  } else if (j.is_string()) {
+    value = j.get<std::string>();
+  } else {
+    k8sop::api::detail::throw_type_error(j, "parameter values must be numbers or strings");
+  }
+}
 
 }  // namespace nlohmann

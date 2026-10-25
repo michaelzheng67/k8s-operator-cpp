@@ -79,7 +79,6 @@ void from_json(const json& j, ContainerStateTerminated& terminated) {
   read_optional(j, "message", terminated.message);
 }
 
-// TODO(you): "name" is a plain field; "terminated" lives at JSON path state.terminated.
 void to_json(json& j, const ContainerStatus& status) {
   j = {{"name", status.name}};
   if (status.terminated) {

@@ -73,6 +73,12 @@ TEST(ParamValue, FloatBecomesDouble) {
   EXPECT_DOUBLE_EQ(std::get<double>(v), 0.5);
 }
 
+TEST(ParamValue, DoubleKeepsFullPrecision) {
+  // 0.1 has no exact binary representation, so any trip through float changes its value.
+  // (0.5 and 0.25 are exact in both float and double, which is why they can't catch this.)
+  EXPECT_EQ(std::get<double>(json::parse("0.1").get<ParamValue>()), 0.1);
+}
+
 TEST(ParamValue, OnePointZeroStaysDouble) {
   // The user wrote 1.0, so this parameter is a double even though the value is a whole number.
   EXPECT_TRUE(std::holds_alternative<double>(json::parse("1.0").get<ParamValue>()));
