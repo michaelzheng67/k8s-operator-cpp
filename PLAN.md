@@ -50,7 +50,7 @@ kubectl cluster-info --context kind-bt
 - [ ] `api/backtest_job.hpp`: `BacktestJobSpec`, `BacktestJobStatus`
 - [ ] `api/backtest_schedule.hpp`: `BacktestScheduleSpec`, `BacktestScheduleStatus`
 - [ ] `to_json` / `from_json` for each, using nlohmann's ADL hooks
-- [ ] Keep unknown fields when round-tripping objects we PATCH, so we never drop data we don't model
+- [ ] `to_json` omits empty fields ("omitempty"). We only ever send PATCHes, never full-object PUTs, so fields we don't model are never at risk of being dropped
 
 **Done when:** unit tests parse real JSON fixtures (captured with `kubectl get pod -o json`) and serialize them back without losing any field we model.
 
