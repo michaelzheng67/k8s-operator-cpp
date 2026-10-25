@@ -1,48 +1,11 @@
 #include "k8sop/api/meta.hpp"
 
-#include <optional>
-
-#include <nlohmann/json.hpp>
+#include "k8sop/api/detail/json_helpers.hpp"
 
 namespace k8sop::api {
-namespace {
 
-template <typename T>
-void read_optional(const nlohmann::json& j, const char* key, T& out) {
-  if (auto it = j.find(key); it != j.end()) {
-    it->get_to(out);
-  }
-}
-
-template <typename T>
-void read_optional(const nlohmann::json& j, const char* key, std::optional<T>& out) {
-  if (auto it = j.find(key); it != j.end()) {
-    out = it->get<T>();
-  }
-}
-
-// Writes `value` under `key` unless it is empty (containers, strings) or zero/false (scalars).
-template <typename T>
-void write_if_set(nlohmann::json& j, const char* key, const T& value) {
-  if constexpr (requires { value.empty(); }) {
-    if (!value.empty()) {
-      j[key] = value;
-    }
-  } else {
-    if (value != T{}) {
-      j[key] = value;
-    }
-  }
-}
-
-template <typename T>
-void write_if_set(nlohmann::json& j, const char* key, const std::optional<T>& value) {
-  if (value) {
-    j[key] = *value;
-  }
-}
-
-}  // namespace
+using detail::read_optional;
+using detail::write_if_set;
 
 void to_json(nlohmann::json& j, const OwnerReference& ref) {
   j["apiVersion"] = ref.api_version;

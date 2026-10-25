@@ -22,6 +22,7 @@ find_package(benchmark CONFIG REQUIRED)
 add_library(k8sop
   src/version.cpp
   src/api/meta.cpp
+  src/api/pod.cpp
 )
 target_include_directories(k8sop PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(k8sop PUBLIC spdlog::spdlog nlohmann_json::nlohmann_json)
@@ -37,6 +38,7 @@ include(GoogleTest)
 add_executable(tests
   tests/version_test.cpp
   tests/api/meta_test.cpp
+  tests/api/pod_test.cpp
 )
 target_link_libraries(tests PRIVATE k8sop GTest::gtest_main)
 k8sop_configure_target(tests)
