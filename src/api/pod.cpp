@@ -1,7 +1,9 @@
 #include "k8sop/api/pod.hpp"
 
-#include "k8sop/api/detail/json_helpers.hpp"
+#include <array>
+#include <utility>
 
+#include "k8sop/api/detail/json_helpers.hpp"
 namespace k8sop::api {
 
 using detail::read_optional;
@@ -10,13 +12,32 @@ using nlohmann::json;
 
 namespace {
 
-// TODO(you): map a phase string from the API to the enum. Unrecognized strings -> Unknown.
-PodPhase parse_pod_phase(std::string_view /*s*/) { return PodPhase::Unknown; }
+constexpr std::array<std::pair<PodPhase, std::string_view>, 5> kPodPhases{
+    {{PodPhase::Pending, "Pending"},
+     {PodPhase::Running, "Running"},
+     {PodPhase::Succeeded, "Succeeded"},
+     {PodPhase::Failed, "Failed"},
+     {PodPhase::Unknown, "Unknown"}}};
+
+PodPhase parse_pod_phase(std::string_view s) {
+  for (const auto [phase, name] : kPodPhases) {
+    if (s == name) {
+      return phase;
+    }
+  }
+  return PodPhase::Unknown;
+}
 
 }  // namespace
 
-// TODO(you): enum -> string. Try to share one mapping table with parse_pod_phase.
-std::string_view to_string(PodPhase /*phase*/) { return ""; }
+std::string_view to_string(PodPhase phase) {
+  for (const auto [p, name] : kPodPhases) {
+    if (phase == p) {
+      return name;
+    }
+  }
+  return "Unknown";
+}
 
 void to_json(json& j, const EnvVar& env) {
   j = json::object();
