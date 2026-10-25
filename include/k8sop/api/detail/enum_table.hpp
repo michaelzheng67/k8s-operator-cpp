@@ -24,10 +24,14 @@ constexpr std::string_view enum_to_string(const EnumTable<E, N>& table, E value)
   return {};
 }
 
-// TODO(you): return the enum paired with `name`, or std::nullopt if no entry matches.
 template <typename E, std::size_t N>
-constexpr std::optional<E> enum_from_string(const EnumTable<E, N>& /*table*/,
-                                            std::string_view /*name*/) noexcept {
+constexpr std::optional<E> enum_from_string(const EnumTable<E, N>& table,
+                                            std::string_view name) noexcept {
+  for (const auto& [v, n] : table) {
+    if (n == name) {
+      return v;
+    }
+  }
   return std::nullopt;
 }
 
