@@ -3,7 +3,9 @@
 #include <array>
 #include <utility>
 
+#include "k8sop/api/detail/enum_table.hpp"
 #include "k8sop/api/detail/json_helpers.hpp"
+
 namespace k8sop::api {
 
 using detail::read_optional;
@@ -12,32 +14,19 @@ using nlohmann::json;
 
 namespace {
 
-constexpr std::array<std::pair<PodPhase, std::string_view>, 5> kPodPhases{
-    {{PodPhase::Pending, "Pending"},
-     {PodPhase::Running, "Running"},
-     {PodPhase::Succeeded, "Succeeded"},
-     {PodPhase::Failed, "Failed"},
-     {PodPhase::Unknown, "Unknown"}}};
+constexpr detail::EnumTable<PodPhase, 5> kPodPhases{{{PodPhase::Pending, "Pending"},
+                                                     {PodPhase::Running, "Running"},
+                                                     {PodPhase::Succeeded, "Succeeded"},
+                                                     {PodPhase::Failed, "Failed"},
+                                                     {PodPhase::Unknown, "Unknown"}}};
 
 PodPhase parse_pod_phase(std::string_view s) {
-  for (const auto [phase, name] : kPodPhases) {
-    if (s == name) {
-      return phase;
-    }
-  }
-  return PodPhase::Unknown;
+  return detail::enum_from_string(kPodPhases, s).value_or(PodPhase::Unknown);
 }
 
 }  // namespace
 
-std::string_view to_string(PodPhase phase) {
-  for (const auto [p, name] : kPodPhases) {
-    if (phase == p) {
-      return name;
-    }
-  }
-  return "Unknown";
-}
+std::string_view to_string(PodPhase phase) { return detail::enum_to_string(kPodPhases, phase); }
 
 void to_json(json& j, const EnvVar& env) {
   j = json::object();
