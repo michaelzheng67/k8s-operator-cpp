@@ -87,11 +87,8 @@ TEST(Pod, ParsesTerminatedStatus) {
   const auto& cs = pod.status.container_statuses[0];
   EXPECT_EQ(cs.name, "worker");
   // JSON nests this as state.terminated; in C++ it's flattened to a single optional.
-  ASSERT_TRUE(cs.terminated.has_value());
-  const auto& terminated = cs.terminated.value();
-  EXPECT_EQ(terminated.exit_code, 1);
-  EXPECT_EQ(terminated.reason, "Error");
-  EXPECT_EQ(terminated.message, "KeyError: 'NVDA'");
+  EXPECT_EQ(cs.terminated, (ContainerStateTerminated{
+                               .exit_code = 1, .reason = "Error", .message = "KeyError: 'NVDA'"}));
 }
 
 TEST(Pod, RunningContainerHasNoTerminatedState) {

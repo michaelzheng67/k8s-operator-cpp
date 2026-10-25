@@ -36,9 +36,9 @@ struct PodSpec {
   bool operator==(const PodSpec&) const = default;
 };
 
-enum class PodPhase { Pending, Running, Succeeded, Failed, Unknown };
+enum class PodPhase : std::uint8_t { Pending, Running, Succeeded, Failed, Unknown };
 
-std::string_view to_string(PodPhase);
+std::string_view to_string(PodPhase phase);
 
 struct ContainerStateTerminated {
   std::int32_t exit_code{0};

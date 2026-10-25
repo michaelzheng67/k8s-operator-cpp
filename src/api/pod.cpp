@@ -91,9 +91,21 @@ void from_json(const json& j, ContainerStateTerminated& terminated) {
 }
 
 // TODO(you): "name" is a plain field; "terminated" lives at JSON path state.terminated.
-void to_json(json& /*j*/, const ContainerStatus& /*status*/) {}
+void to_json(json& j, const ContainerStatus& status) {
+  j = {{"name", status.name}};
+  if (status.terminated) {
+    j["state"]["terminated"] = *status.terminated;
+  }
+}
 
-void from_json(const json& /*j*/, ContainerStatus& /*status*/) {}
+void from_json(const json& j, ContainerStatus& status) {
+  read_optional(j, "name", status.name);
+  if (auto state = j.find("state"); state != j.end()) {
+    if (auto term = state->find("terminated"); term != state->end()) {
+      status.terminated = term->get<ContainerStateTerminated>();
+    }
+  }
+}
 
 void to_json(json& j, const PodStatus& status) {
   j = {{"phase", to_string(status.phase)}};
