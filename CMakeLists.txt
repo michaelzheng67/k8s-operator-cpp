@@ -47,8 +47,10 @@ add_executable(tests
   tests/api/backtest_job_test.cpp
   tests/api/backtest_schedule_test.cpp
   tests/api/parse_test.cpp
+  tests/api/fixture_test.cpp
 )
 target_link_libraries(tests PRIVATE k8sop GTest::gtest_main)
+target_compile_definitions(tests PRIVATE K8SOP_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
 k8sop_configure_target(tests)
 gtest_discover_tests(tests)
 
