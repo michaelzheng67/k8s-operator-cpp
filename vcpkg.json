@@ -6,6 +6,9 @@
     "spdlog",
     "nlohmann-json",
     "gtest",
-    "benchmark"
+    "benchmark",
+    "boost-beast",
+    "openssl",
+    "yaml-cpp"
   ]
 }

@@ -17,6 +17,9 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 find_package(benchmark CONFIG REQUIRED)
+find_package(boost_beast CONFIG REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
 # Core library: everything except main() lives here so tests and benchmarks can link it.
 add_library(k8sop
@@ -27,9 +30,14 @@ add_library(k8sop
   src/api/backtest_job.cpp
   src/api/backtest_schedule.cpp
   src/api/parse.cpp
+  src/client/config.cpp
+  src/client/connection.cpp
 )
 target_include_directories(k8sop PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(k8sop PUBLIC spdlog::spdlog nlohmann_json::nlohmann_json)
+target_link_libraries(k8sop
+  PUBLIC spdlog::spdlog nlohmann_json::nlohmann_json Boost::beast OpenSSL::SSL OpenSSL::Crypto
+  PRIVATE yaml-cpp::yaml-cpp
+)
 k8sop_configure_target(k8sop)
 
 add_executable(operator src/main.cpp)
@@ -48,8 +56,12 @@ add_executable(tests
   tests/api/backtest_schedule_test.cpp
   tests/api/parse_test.cpp
   tests/api/fixture_test.cpp
+  tests/client/config_test.cpp
+  tests/client/connection_test.cpp
+  tests/support/test_certs.cpp
 )
 target_link_libraries(tests PRIVATE k8sop GTest::gtest_main)
+target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests/support)
 target_compile_definitions(tests PRIVATE K8SOP_FIXTURE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures")
 k8sop_configure_target(tests)
 gtest_discover_tests(tests)

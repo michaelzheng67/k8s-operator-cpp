@@ -5,3 +5,7 @@ compile_commands.json
 .vscode/
 .idea/
 .DS_Store
+
+# Never commit credentials
+*.key
+*.pem
