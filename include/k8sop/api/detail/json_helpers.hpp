@@ -14,8 +14,24 @@
 
 namespace k8sop::api::detail {
 
+// Throws the same exception type nlohmann uses for type mismatches, so callers only ever have to
+// handle nlohmann::json::exception.
+[[noreturn]] inline void throw_type_error(const nlohmann::json& j, const std::string& message) {
+  throw nlohmann::json::type_error::create(302, message, &j);
+}
+
+// Every struct's from_json reads its fields through read_optional, so this is where a non-object
+// (array, number, string, null) is rejected. Without it, find() on a non-object returns end() and
+// the struct would silently parse as all defaults.
+inline void require_object(const nlohmann::json& j) {
+  if (!j.is_object()) {
+    throw_type_error(j, std::string("expected an object, got ") + j.type_name());
+  }
+}
+
 template <typename T>
 void read_optional(const nlohmann::json& j, const char* key, T& out) {
+  require_object(j);
   if (auto it = j.find(key); it != j.end()) {
     it->get_to(out);
   }
@@ -23,6 +39,7 @@ void read_optional(const nlohmann::json& j, const char* key, T& out) {
 
 template <typename T>
 void read_optional(const nlohmann::json& j, const char* key, std::optional<T>& out) {
+  require_object(j);
   if (auto it = j.find(key); it != j.end()) {
     out = it->get<T>();
   }
@@ -47,12 +64,6 @@ void write_if_set(nlohmann::json& j, const char* key, const std::optional<T>& va
   if (value) {
     j[key] = *value;
   }
-}
-
-// Throws the same exception type nlohmann uses for type mismatches, so callers only ever have to
-// handle nlohmann::json::exception.
-[[noreturn]] inline void throw_type_error(const nlohmann::json& j, const std::string& message) {
-  throw nlohmann::json::type_error::create(302, message, &j);
 }
 
 // Reads a JSON string into an enum via its table. Throws type_error for unknown names.

@@ -26,6 +26,7 @@ add_library(k8sop
   src/api/condition.cpp
   src/api/backtest_job.cpp
   src/api/backtest_schedule.cpp
+  src/api/parse.cpp
 )
 target_include_directories(k8sop PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(k8sop PUBLIC spdlog::spdlog nlohmann_json::nlohmann_json)
@@ -45,6 +46,7 @@ add_executable(tests
   tests/api/enum_table_test.cpp
   tests/api/backtest_job_test.cpp
   tests/api/backtest_schedule_test.cpp
+  tests/api/parse_test.cpp
 )
 target_link_libraries(tests PRIVATE k8sop GTest::gtest_main)
 k8sop_configure_target(tests)
