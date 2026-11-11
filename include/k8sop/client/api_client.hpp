@@ -9,6 +9,7 @@
 #include <boost/asio/ssl/context.hpp>
 #include <boost/beast/http/verb.hpp>
 
+#include "k8sop/api/list.hpp"
 #include "k8sop/api/parse.hpp"
 #include "k8sop/client/api_error.hpp"
 #include "k8sop/client/config.hpp"
@@ -42,6 +43,16 @@ class ApiClient {
     }
 
     return std::move(*parse_res);
+  }
+
+  // TODO(you): GET resource_path<T>(ns) with "?labelSelector=<url-encoded selector>" appended
+  // when `label_selector` isn't empty, and parse the body into an api::List<T>.
+  template <Resource T>
+  [[nodiscard]] std::expected<api::List<T>, ApiError> list(std::string_view ns,
+                                                           std::string_view label_selector = "") {
+    (void)ns;
+    (void)label_selector;
+    return std::unexpected(ApiError{.reason = "NotImplemented"});
   }
 
  private:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cctype>
 #include <string>
 #include <string_view>
 
@@ -58,6 +59,23 @@ std::string resource_path(std::string_view ns, std::string_view name = "") {
     path += name;
   }
   return path;
+}
+
+inline std::string url_encode(std::string_view in) {
+  constexpr std::string_view kHex = "0123456789ABCDEF";
+  constexpr std::string_view kUnreserved = "-._~";
+  std::string out;
+  for (const auto ch : in) {
+    const auto c = static_cast<unsigned char>(ch);
+    if (std::isalnum(c) || kUnreserved.contains(ch)) {
+      out += ch;
+    } else {
+      out += '%';
+      out += kHex[c >> 4];
+      out += kHex[c & 0xF];
+    }
+  }
+  return out;
 }
 
 }  // namespace k8sop::client

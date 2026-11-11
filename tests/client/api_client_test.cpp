@@ -50,5 +50,21 @@ TEST_F(ApiClientTest, ReusesConnectionAcrossCalls) {
   }
 }
 
+TEST_F(ApiClientTest, ListPodsBySelector) {
+  const auto pods = client_->list<api::Pod>("default", "quant.example.com/job=demo");
+  ASSERT_TRUE(pods.has_value()) << pods.error().reason << ": " << pods.error().message;
+  EXPECT_FALSE(pods->metadata.resource_version.empty());
+  ASSERT_EQ(pods->items.size(), 2U);  // shard-demo and shard-running
+  for (const auto& pod : pods->items) {
+    EXPECT_EQ(pod.metadata.labels.at("quant.example.com/job"), "demo");
+  }
+}
+
+TEST_F(ApiClientTest, ListWithNoMatchesIsEmpty) {
+  const auto pods = client_->list<api::Pod>("default", "quant.example.com/job=nothing");
+  ASSERT_TRUE(pods.has_value()) << pods.error().reason << ": " << pods.error().message;
+  EXPECT_TRUE(pods->items.empty());
+}
+
 }  // namespace
 }  // namespace k8sop::client

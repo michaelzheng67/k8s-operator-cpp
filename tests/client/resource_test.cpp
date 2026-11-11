@@ -27,5 +27,19 @@ TEST(ResourcePath, CustomGroup) {
             "/apis/quant.example.com/v1alpha1/namespaces/backtests/backtestschedules");
 }
 
+TEST(UrlEncode, LabelSelector) {
+  EXPECT_EQ(url_encode("quant.example.com/job=demo"), "quant.example.com%2Fjob%3Ddemo");
+}
+
+TEST(UrlEncode, UnreservedCharactersPassThrough) {
+  EXPECT_EQ(url_encode("AZaz09-._~"), "AZaz09-._~");
+  EXPECT_EQ(url_encode(""), "");
+}
+
+TEST(UrlEncode, EverythingElseIsEscaped) {
+  EXPECT_EQ(url_encode("a b,c!=d"), "a%20b%2Cc%21%3Dd");
+  EXPECT_EQ(url_encode("\xff"), "%FF");  // bytes above 127: watch out for signed char
+}
+
 }  // namespace
 }  // namespace k8sop::client
