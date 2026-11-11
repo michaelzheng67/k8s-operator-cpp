@@ -62,6 +62,7 @@ add_executable(tests
   tests/client/resource_test.cpp
   tests/client/api_error_test.cpp
   tests/client/api_client_test.cpp
+  tests/informer/store_test.cpp
   tests/support/test_certs.cpp
 )
 target_link_libraries(tests PRIVATE k8sop GTest::gtest_main)
