@@ -58,6 +58,7 @@ add_executable(tests
   tests/api/fixture_test.cpp
   tests/client/config_test.cpp
   tests/client/connection_test.cpp
+  tests/client/resource_test.cpp
   tests/support/test_certs.cpp
 )
 target_link_libraries(tests PRIVATE k8sop GTest::gtest_main)
