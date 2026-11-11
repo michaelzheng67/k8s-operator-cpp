@@ -18,13 +18,28 @@ concept Resource = requires {
   ResourceTraits<T>::group;
   ResourceTraits<T>::version;
   ResourceTraits<T>::plural;
+  ResourceTraits<T>::kind;
 };
+
+// "v1" for the core group, "quant.example.com/v1alpha1" otherwise: the apiVersion field.
+template <Resource T>
+std::string api_version() {
+  using Traits = ResourceTraits<T>;
+  std::string out;
+  if (!Traits::group.empty()) {
+    out += Traits::group;
+    out += '/';
+  }
+  out += Traits::version;
+  return out;
+}
 
 template <>
 struct ResourceTraits<api::Pod> {
   static constexpr std::string_view group = "";
   static constexpr std::string_view version = "v1";
   static constexpr std::string_view plural = "pods";
+  static constexpr std::string_view kind = "Pod";
 };
 
 template <>
@@ -32,6 +47,7 @@ struct ResourceTraits<api::BacktestJob> {
   static constexpr std::string_view group = "quant.example.com";
   static constexpr std::string_view version = "v1alpha1";
   static constexpr std::string_view plural = "backtestjobs";
+  static constexpr std::string_view kind = "BacktestJob";
 };
 
 template <>
@@ -39,6 +55,7 @@ struct ResourceTraits<api::BacktestSchedule> {
   static constexpr std::string_view group = "quant.example.com";
   static constexpr std::string_view version = "v1alpha1";
   static constexpr std::string_view plural = "backtestschedules";
+  static constexpr std::string_view kind = "BacktestSchedule";
 };
 
 template <Resource T>

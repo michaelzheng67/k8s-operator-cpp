@@ -28,11 +28,36 @@ ApiError error_from(const Response& response) {
 
 }  // namespace
 
+namespace detail {
+
+std::string set_type_meta(std::string_view body, std::string_view api_version,
+                          std::string_view kind) {
+  auto object = nlohmann::json::parse(body);
+  object["apiVersion"] = api_version;
+  object["kind"] = kind;
+  return object.dump();
+}
+
+}  // namespace detail
+
+std::string_view ApiClient::patch_content_type(PatchType type) noexcept {
+  switch (type) {
+    case PatchType::Merge:
+      return "application/merge-patch+json";
+    case PatchType::Json:
+      return "application/json-patch+json";
+    case PatchType::Apply:
+      return "application/apply-patch+yaml";  // JSON is valid YAML, so a JSON body is fine
+  }
+  return "application/merge-patch+json";
+}
+
 ApiClient::ApiClient(ClusterConfig config)
     : config_(std::move(config)), ssl_ctx_(make_ssl_context(config_)) {}
 
 std::expected<Response, ApiError> ApiClient::request(http::verb verb, std::string_view target,
-                                                     std::string body) {
+                                                     std::string body,
+                                                     std::string_view content_type) {
   Request req{verb, target, 11};
   req.set(http::field::host, config_.host);
   req.set(http::field::accept, "application/json");
@@ -41,7 +66,7 @@ std::expected<Response, ApiError> ApiClient::request(http::verb verb, std::strin
     req.set(http::field::authorization, "Bearer " + config_.token);
   }
   if (!body.empty()) {
-    req.set(http::field::content_type, "application/json");
+    req.set(http::field::content_type, content_type);
     req.body() = std::move(body);
   }
   req.keep_alive(true);

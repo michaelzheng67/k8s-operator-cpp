@@ -5,10 +5,12 @@
 #include "k8sop/client/api_client.hpp"
 
 #include <cstdlib>
+#include <string>
 #include <string_view>
 #include <utility>
 
 #include <gtest/gtest.h>
+#include <unistd.h>
 
 namespace k8sop::client {
 namespace {
@@ -64,6 +66,41 @@ TEST_F(ApiClientTest, ListWithNoMatchesIsEmpty) {
   const auto pods = client_->list<api::Pod>("default", "quant.example.com/job=nothing");
   ASSERT_TRUE(pods.has_value()) << pods.error().reason << ": " << pods.error().message;
   EXPECT_TRUE(pods->items.empty());
+}
+
+TEST_F(ApiClientTest, CreatePatchDeletePod) {
+  const std::string name = "k8sop-it-" + std::to_string(::getpid());
+  const api::Pod pod{
+      .metadata = {.name = name, .namespace_ = "default", .labels = {{"k8sop-test", "true"}}},
+      .spec = {.containers = {{.name = "c", .image = "busybox:1.36", .args = {"sleep", "30"}}},
+               .restart_policy = "Never"}};
+
+  const auto created = client_->create(pod);
+  ASSERT_TRUE(created.has_value()) << created.error().reason << ": " << created.error().message;
+  EXPECT_FALSE(created->metadata.uid.empty());  // server-set fields come back
+  EXPECT_FALSE(created->metadata.resource_version.empty());
+
+  const auto patched = client_->patch<api::Pod>(
+      "default", name, R"({"metadata":{"labels":{"stage":"patched"}}})", PatchType::Merge);
+  ASSERT_TRUE(patched.has_value()) << patched.error().reason << ": " << patched.error().message;
+  EXPECT_EQ(patched->metadata.labels.at("stage"), "patched");
+  EXPECT_EQ(patched->metadata.labels.at("k8sop-test"), "true");  // merge keeps other labels
+
+  const auto duplicate = client_->create(pod);
+  ASSERT_FALSE(duplicate.has_value());
+  EXPECT_EQ(duplicate.error().status, 409);
+  EXPECT_EQ(duplicate.error().reason, "AlreadyExists");
+
+  const auto removed = client_->remove<api::Pod>("default", name);
+  ASSERT_TRUE(removed.has_value()) << removed.error().message;
+
+  // Graceful deletion: either gone already, or still terminating with deletionTimestamp set.
+  const auto after = client_->get<api::Pod>("default", name);
+  if (after.has_value()) {
+    EXPECT_TRUE(after->metadata.deletion_timestamp.has_value());
+  } else {
+    EXPECT_EQ(after.error().status, 404);
+  }
 }
 
 }  // namespace
