@@ -45,14 +45,31 @@ class ApiClient {
     return std::move(*parse_res);
   }
 
-  // TODO(you): GET resource_path<T>(ns) with "?labelSelector=<url-encoded selector>" appended
-  // when `label_selector` isn't empty, and parse the body into an api::List<T>.
-  template <Resource T>
+    template <Resource T>
   [[nodiscard]] std::expected<api::List<T>, ApiError> list(std::string_view ns,
                                                            std::string_view label_selector = "") {
-    (void)ns;
-    (void)label_selector;
-    return std::unexpected(ApiError{.reason = "NotImplemented"});
+    using Verb = boost::beast::http::verb;
+
+    auto url = resource_path<T>(ns);
+    if (!label_selector.empty()) {
+      url += "?labelSelector=";
+      url += url_encode(label_selector);
+    }
+    auto res = request(Verb::get, url);
+    if (!res.has_value()) {
+      return std::unexpected(res.error());
+    }
+
+    auto parse_res = api::parse<api::List<T>>(res->body());
+    if (!parse_res.has_value()) {
+      return std::unexpected(ApiError{
+          .status = static_cast<int>(res->result_int()),
+          .reason = "InvalidResponse",
+          .message = parse_res.error().message,
+      });
+    }
+
+    return std::move(*parse_res);
   }
 
  private:

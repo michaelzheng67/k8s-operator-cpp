@@ -52,6 +52,7 @@ template std::expected<Pod, ParseError> parse<Pod>(std::string_view) noexcept;
 template std::expected<BacktestJob, ParseError> parse<BacktestJob>(std::string_view) noexcept;
 template std::expected<BacktestSchedule, ParseError> parse<BacktestSchedule>(
     std::string_view) noexcept;
+template std::expected<List<Pod>, ParseError> parse<List<Pod>>(std::string_view) noexcept;
 
 template std::string serialize<ObjectMeta>(const ObjectMeta&);
 template std::string serialize<Pod>(const Pod&);
