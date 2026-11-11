@@ -32,6 +32,7 @@ add_library(k8sop
   src/api/parse.cpp
   src/client/config.cpp
   src/client/connection.cpp
+  src/client/api_client.cpp
 )
 target_include_directories(k8sop PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(k8sop
@@ -60,6 +61,7 @@ add_executable(tests
   tests/client/connection_test.cpp
   tests/client/resource_test.cpp
   tests/client/api_error_test.cpp
+  tests/client/api_client_test.cpp
   tests/support/test_certs.cpp
 )
 target_link_libraries(tests PRIVATE k8sop GTest::gtest_main)
